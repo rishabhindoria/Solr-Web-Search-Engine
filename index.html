@@ -1,0 +1,61 @@
+<html>
+<meta charset="utf-8"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $("#go").click(function() {		
+		var choice;
+		var selectedValue;
+ 		if($("input[name=choice]").is(":checked")&&$.trim($("#search").val()).length>0)
+		{
+			selectedValue=$("input[name=choice]:checked").val();
+			if(selectedValue.match("lucene"))
+				choice="lucene";
+			else if(selectedValue.match("pagerank"))
+				choice="pagerank";
+			$.ajax({
+				type: 'GET',
+				dataType:'json',
+				url: 'http://localhost:1337/Go?search='+$.trim($("#search").val())+'&choice='+choice,
+				success:function(data) {
+					$("#results").html("");
+					$("#count").html("");
+					if(data.length==0)
+						$("#results").append("<p>Sorry no results were found, try another query term</p>");
+					else
+					{
+						var number=data[0];
+						$("#count").html("<div>Results 1 - 10 of "+number+":<div>");
+						var docs=data[1];
+						docs.forEach(function(x){
+							var url=x.site_url;
+							var description=x.description;
+							if (typeof description=== "undefined") {
+								description="N/A";
+							}
+							$("#results").append("<br>");
+							$("#results").append("<div><a style='text-decoration:none' href='"+url+"' target='_blank'>"+x.title+"</a><br><a style='color:green' href='"+url+"' target='_blank'>"+url+"</a><br>"+description+"<br><font size='2'>"+x.id+"</font></div>");
+						});
+					}
+				},
+				error:function(jqXHR, textStatus, errorThrown){
+				}
+			});
+		}
+		else{
+			alert("Please fill all the details");
+		}
+	});
+});
+</script>
+<body>
+<div align="center">
+<input type="text" id="search" required/>
+<input type="radio" name="choice" value="lucene"/>Lucene
+<input type="radio" name="choice" value="pagerank"/>PageRank
+<input type="submit" value="Search" id="go"/>
+</div>
+<div id="count"></div>
+<div id="results"></div>
+</body>
+</html>
